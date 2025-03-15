@@ -6,8 +6,6 @@ from app.config import get_settings
 
 settings = get_settings()
 
-print(settings.SQLALCHEMY_DB_URL)
-
 engine = create_async_engine(settings.SQLALCHEMY_DB_URL, echo=False)
 
 async_session_maker = sessionmaker(

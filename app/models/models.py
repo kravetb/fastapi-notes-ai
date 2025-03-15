@@ -1,11 +1,40 @@
-from sqlalchemy import Column, Integer, String, Text
+import sqlalchemy as sa
+from sqlalchemy.orm import relationship
+
 from app.database import Base
 
-class Note(Base):
-    __tablename__ = 'notes'
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    content = Column(Text)
-    created_at = Column(Integer)
-    updated_at = Column(Integer)
+class NoteHistory(Base):
+    __tablename__ = "note_histories"
+    __table_args__ = (
+        {
+            "schema": "public",
+        }
+    )
+
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    content = sa.Column(sa.Text)
+    version = sa.Column(sa.Integer)
+    updated_at = sa.Column(sa.String)
+    note_id = sa.Column(
+        sa.Integer,
+        sa.ForeignKey("public.notes.id", ondelete="CASCADE")
+    )
+
+    note = relationship("Note", back_populates="histories")
+
+
+class Note(Base):
+    __tablename__ = "notes"
+    __table_args__ = (
+        {
+            "schema": "public",
+        }
+    )
+
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    title = sa.Column(sa.String, index=True)
+    content = sa.Column(sa.Text)
+    version = sa.Column(sa.Integer, default=1)
+
+    histories = relationship("NoteHistory", back_populates="note")

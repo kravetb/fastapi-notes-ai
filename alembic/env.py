@@ -10,18 +10,14 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# Налаштування логування
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Вкажіть вашу метадані
 target_metadata = Base.metadata
 
-# Оновлюємо URL бази даних із змінного середовища
 config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DB_URL)
 
-# Створення асинхронного двигуна
 def get_engine():
     return create_async_engine(
         config.get_main_option("sqlalchemy.url"),
@@ -40,20 +36,19 @@ def do_run_migrations(connection):
         connection=connection,
         target_metadata=target_metadata,
         include_schemas=True,
-        render_as_batch=True  # Особливо важливо для SQLite
+        render_as_batch=True
     )
 
     with context.begin_transaction():
         context.run_migrations()
 
-# Визначаємо, як запускати міграції
 if context.is_offline_mode():
     context.configure(
         url=config.get_main_option("sqlalchemy.url"),
         target_metadata=target_metadata,
         literal_binds=True,
         include_schemas=True,
-        render_as_batch=True  # Особливо важливо для SQLite
+        render_as_batch=True
     )
     with context.begin_transaction():
         context.run_migrations()
