@@ -143,3 +143,24 @@ async def rollback_note(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Note rollback failed",
     )
+
+
+@note_router.get(
+    path="/{note_id}",
+    name="Get detail info about note",
+    response_model=schema.DetailResponseNote,
+)
+async def get_note_detail(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        note_id: int,
+):
+
+    result = await crud_note.get_note_with_history(db=db, note_id=note_id)
+
+    if not result is None:
+        return result
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Note not found",
+    )

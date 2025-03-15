@@ -2,6 +2,7 @@ from typing import List
 
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select, func, update, delete
+from sqlalchemy.orm import joinedload
 
 from app.schemas import note as schema
 from app.models.models import Note, NoteHistory
@@ -25,6 +26,44 @@ async def get_note(
         version=note_data.version,
         title=note_data.title,
         content=note_data.content,
+    )
+
+    return note
+
+
+async def get_note_with_history(
+        db: AsyncSession,
+        note_id: int,
+) -> schema.DetailResponseNote | None:
+
+    query = (
+        select(Note)
+        .options(
+            joinedload(Note.histories),
+        )
+        .where(Note.id == note_id)
+    )
+
+    result = await db.execute(query)
+    note_data = result.scalar()
+
+    if note_data is None:
+        return None
+
+    note = schema.DetailResponseNote(
+        id=note_data.id,
+        version=note_data.version,
+        title=note_data.title,
+        content=note_data.content,
+        history=[
+            schema.ResponseNoteHistory(
+                id=item.id,
+                version=item.version,
+                content=item.content,
+                updated_at=item.updated_at,
+            )
+            for item in note_data.histories
+        ]
     )
 
     return note

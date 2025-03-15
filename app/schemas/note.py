@@ -87,3 +87,10 @@ class RollbackNote(Base):
         description="The old version of the note history item",
         example=2,
     )
+
+
+class DetailResponseNote(ResponseNote):
+    history: List[ResponseNoteHistory] = Field(
+        ...,
+        description="History by current note",
+    )
