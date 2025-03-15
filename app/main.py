@@ -2,6 +2,8 @@ import logging
 
 from fastapi import FastAPI
 
+from app.routers.note import note_router
+
 logger = logging.getLogger(__name__)
 
 def create_application() -> FastAPI:
@@ -17,6 +19,8 @@ def create_application() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json",
     )
+
+    app.include_router(note_router, prefix="/notes", tags=["Notes"])
 
     return app
 

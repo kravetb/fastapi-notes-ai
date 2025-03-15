@@ -6,7 +6,7 @@ from app.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(settings.SQLALCHEMY_DB_URL, echo=False)
+engine = create_async_engine(settings.SQLALCHEMY_DB_URL, echo=True)
 
 async_session_maker = sessionmaker(
     bind=engine,
@@ -18,6 +18,7 @@ Base = declarative_base()
 
 
 async def get_db() -> AsyncSession:
+    print(settings.SQLALCHEMY_DB_URL)
     async with async_session_maker() as session:
         try:
             yield session

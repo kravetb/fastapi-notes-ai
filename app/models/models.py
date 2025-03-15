@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
@@ -15,7 +17,7 @@ class NoteHistory(Base):
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     content = sa.Column(sa.Text)
     version = sa.Column(sa.Integer)
-    updated_at = sa.Column(sa.String)
+    updated_at = sa.Column(sa.DateTime, default=sa.func.now())
     note_id = sa.Column(
         sa.Integer,
         sa.ForeignKey("public.notes.id", ondelete="CASCADE")
