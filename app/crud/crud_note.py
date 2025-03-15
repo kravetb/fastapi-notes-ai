@@ -1,7 +1,31 @@
 from sqlalchemy.ext.asyncio.session import AsyncSession
+from sqlalchemy import select, func, update, delete
 
 from app.schemas import note as schema
 from app.models.models import Note, NoteHistory
+
+
+async def get_note(
+        db: AsyncSession,
+        note_id: int,
+):
+
+    query = select(Note).where(Note.id == note_id)
+
+    result = await db.execute(query)
+    note_data = result.scalar()
+
+    if note_data is None:
+        return None
+
+    note = schema.ResponseNote(
+        id=note_data.id,
+        version=note_data.version,
+        title=note_data.title,
+        content=note_data.content,
+    )
+
+    return note
 
 
 async def create_note(
@@ -38,6 +62,83 @@ async def create_note(
         )
 
         return note_response
+
+    except Exception as e:
+        print(e)
+        await db.rollback()
+        return None
+
+
+async def get_notes(
+        db: AsyncSession,
+        limit: int = 10,
+        offset: int = 0,
+):
+
+    query = (
+        select(Note)
+        .limit(limit)
+        .offset(offset)
+    )
+    count_query = select(func.count(Note.id))
+
+    result = await db.execute(query)
+    notes_data = result.scalars().all()
+
+    count_result = await db.execute(count_query)
+    count = count_result.scalar()
+
+    notes_response = schema.ResponseNotes(
+        notes=[
+            schema.ResponseNote(
+                id=item.id,
+                version=item.version,
+                title=item.title,
+                content=item.content,
+            )
+            for item in notes_data
+        ],
+        count_items=count,
+    )
+
+    return notes_response
+
+
+async def update_note(
+        db: AsyncSession,
+        note_id: int,
+        update_data: schema.UpdateNote,
+) -> schema.ResponseNote | None:
+
+    try:
+
+        note_query = (
+            update(Note)
+            .where(Note.id == note_id)
+            .values(
+                content=update_data.content,
+                version=Note.version + 1,
+            )
+            .returning(Note.version)
+        )
+
+        result = await db.execute(note_query)
+        new_version = result.scalar()
+
+
+        note_history = NoteHistory(
+            content=update_data.content,
+            version=new_version,
+            note_id=note_id,
+        )
+
+        db.add(note_history)
+
+        await db.commit()
+
+        new_note = await get_note(db=db, note_id=note_id)
+
+        return new_note
 
     except Exception as e:
         print(e)
