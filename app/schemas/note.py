@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -32,7 +33,7 @@ class ResponseNote(Note):
     )
     version: int = Field(
         ...,
-        description="The versio of the note",
+        description="The version of the note",
         example=3,
     )
 
@@ -54,4 +55,27 @@ class UpdateNote(Base):
         ...,
         description="New content by current note",
         example="New test content",
+    )
+
+
+class ResponseNoteHistory(Base):
+    id: int = Field(
+        ...,
+        description="The id of the note history item",
+        example=4,
+    )
+    version: int = Field(
+        ...,
+        description="The version of the note history item",
+        example=2,
+    )
+    content: str = Field(
+        ...,
+        description="The content of the note history item",
+        example="Test history content",
+    )
+    updated_at: datetime = Field(
+        ...,
+        description="The time when the note item was updated",
+        example="2025-03-15 12:00:00",
     )

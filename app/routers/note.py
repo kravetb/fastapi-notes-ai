@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from fastapi import APIRouter, Depends, status, Query
@@ -102,3 +102,18 @@ async def delete_note(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Note deletion failed",
     )
+
+
+@note_router.get(
+    path="/{note_id}/history",
+    name="Get note history by current note",
+    response_model=List[schema.ResponseNoteHistory]
+)
+async def get_note_history(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        note_id: int,
+):
+
+    result = await crud_note.get_history_by_current_note(db=db, note_id=note_id)
+
+    return result

@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select, func, update, delete
 
@@ -158,3 +160,25 @@ async def delete_note(db: AsyncSession, note_id: int) -> bool:
     except Exception:
         await db.rollback()
         return False
+
+
+async def get_history_by_current_note(
+        db: AsyncSession,
+        note_id: int,
+) -> List[schema.ResponseNoteHistory]:
+
+    query = select(NoteHistory).where(NoteHistory.note_id == note_id)
+    result = await db.execute(query)
+    histories_data = result.scalars().all()
+
+    histories_response = [
+        schema.ResponseNoteHistory(
+            id=item.id,
+            version=item.version,
+            content=item.content,
+            updated_at=item.updated_at,
+        )
+        for item in histories_data
+    ]
+
+    return histories_response
