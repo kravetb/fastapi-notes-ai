@@ -144,3 +144,17 @@ async def update_note(
         print(e)
         await db.rollback()
         return None
+
+
+async def delete_note(db: AsyncSession, note_id: int) -> bool:
+
+    try:
+        query = delete(Note).where(Note.id == note_id)
+        await db.execute(query)
+        await db.commit()
+
+        return True
+
+    except Exception:
+        await db.rollback()
+        return False

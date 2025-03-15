@@ -78,3 +78,27 @@ async def update_note(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Note update failed",
     )
+
+
+@note_router.delete(
+    path="/{note_id}",
+    name="Delete note",
+    response_model=bool,
+)
+async def delete_note(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        note_id: int,
+):
+
+    result = await crud_note.delete_note(
+        db=db,
+        note_id=note_id,
+    )
+
+    if result:
+        return result
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Note deletion failed",
+    )
