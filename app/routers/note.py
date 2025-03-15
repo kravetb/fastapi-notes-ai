@@ -117,3 +117,29 @@ async def get_note_history(
     result = await crud_note.get_history_by_current_note(db=db, note_id=note_id)
 
     return result
+
+
+@note_router.put(
+    path="/{note_id}/rollback",
+    name="Rollback note to some version",
+    response_model=schema.ResponseNote,
+)
+async def rollback_note(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        note_id: int,
+        data: schema.RollbackNote,
+):
+
+    result = await crud_note.roll_back_note(
+        db=db,
+        note_id=note_id,
+        version=data.version,
+    )
+
+    if not result is None:
+        return result
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Note rollback failed",
+    )

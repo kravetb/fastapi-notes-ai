@@ -79,3 +79,11 @@ class ResponseNoteHistory(Base):
         description="The time when the note item was updated",
         example="2025-03-15 12:00:00",
     )
+
+
+class RollbackNote(Base):
+    version: int = Field(
+        ...,
+        description="The old version of the note history item",
+        example=2,
+    )

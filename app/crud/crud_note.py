@@ -142,8 +142,7 @@ async def update_note(
 
         return new_note
 
-    except Exception as e:
-        print(e)
+    except Exception:
         await db.rollback()
         return None
 
@@ -182,3 +181,42 @@ async def get_history_by_current_note(
     ]
 
     return histories_response
+
+
+async def roll_back_note(
+        db: AsyncSession,
+        note_id: int,
+        version: int,
+):
+
+    try:
+        get_history_query = (
+            select(NoteHistory)
+            .where(
+                NoteHistory.note_id == note_id,
+                NoteHistory.version == version,
+            )
+        )
+
+        history_result = await db.execute(get_history_query)
+        history = history_result.scalar()
+
+        update_note_query = (
+            update(Note)
+            .where(Note.id == note_id)
+            .values(
+                content=history.content,
+                version=history.version,
+            )
+        )
+
+        await db.execute(update_note_query)
+        await db.commit()
+
+        new_note = await get_note(db=db, note_id=note_id)
+
+        return new_note
+
+    except Exception:
+        await db.rollback()
+        return None
