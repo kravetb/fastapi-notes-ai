@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.testclient import TestClient
 from fastapi import status
 
@@ -10,13 +9,7 @@ from app.database import get_db
 from app.main import app
 from app import models
 from app.schemas import note as schema
-
-
-@pytest.fixture
-def mock_db():
-    mock_db = AsyncMock(spec=AsyncSession)
-    mock_db.refresh = AsyncMock()
-    return mock_db
+from app.tests.fixtures import mock_get_db
 
 
 @pytest.fixture
@@ -55,16 +48,8 @@ def mock_create_note():
     return _mock_create_note
 
 
-@pytest.fixture
-def mock_get_db():
-    """Фікстура для мокування get_db"""
-    mock_db = AsyncMock(spec=AsyncSession)
-    return mock_db
-
-
 @pytest.mark.asyncio
 async def test_create_note_success(mock_get_db, mock_create_note):
-    """Тест для функції створення нотатки"""
 
     app.dependency_overrides[get_db] = lambda: mock_get_db
 
