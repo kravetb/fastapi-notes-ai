@@ -1,7 +1,7 @@
 from typing import Annotated, List
 
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, Path
 from fastapi.exceptions import HTTPException
 
 from app.schemas import note as schema
@@ -9,6 +9,22 @@ from app.database import get_db
 from app.crud import crud_note
 
 note_router = APIRouter()
+
+
+@note_router.get(
+    path="/analytics",
+    name="Get analytics",
+    response_model=schema.AnalyticsResponse,
+)
+async def get_analytics(
+        db: Annotated[AsyncSession, Depends(get_db)],
+):
+
+    result = await crud_note.get_notes_analytics(
+        db=db,
+    )
+
+    return result
 
 
 @note_router.post(
@@ -61,8 +77,8 @@ async def get_notes(
 )
 async def update_note(
         db: Annotated[AsyncSession, Depends(get_db)],
-        note_id: int,
         update_data: schema.UpdateNote,
+        note_id: int = Path(..., title="Note ID", description="ID of the note"),
 ):
 
     result = await crud_note.update_note(
@@ -152,7 +168,7 @@ async def rollback_note(
 )
 async def get_note_detail(
         db: Annotated[AsyncSession, Depends(get_db)],
-        note_id: int,
+        note_id: int = Path(..., title="Note ID", description="ID of the note"),
 ):
 
     result = await crud_note.get_note_with_history(db=db, note_id=note_id)

@@ -106,3 +106,41 @@ class SummarizeResponseNote(Base):
         ...,
         description="The summarize content of the note",
     )
+
+
+class AnalyticsResponse(Base):
+    total_words: int = Field(
+        default=0,
+        description="The total number of words in notes",
+        example=100,
+    )
+    average_note_length: float = Field(
+        default=0,
+        description="The average length of notes",
+        example=13,
+    )
+    most_common_words: List[tuple] = Field(
+        ...,
+        description="The most common words in notes",
+        example=[
+            ("programming", 35),
+            ("Python", 28),
+            ("FastAPI", 22),
+            ("artificial", 20),
+            ("intelligence", 18),
+        ],
+    )
+    shortest_notes: List[str] = Field(
+        default=List,
+        description="Three shortest notes",
+        example=["Hello!", "This is a test.", "I love Python."],
+    )
+    longest_notes: List[str] = Field(
+        default=List,
+        description="Three longest notes",
+        example=[
+            "Python is a powerful programming language...",
+            "FastAPI allows you to create high-performance APIs...",
+            "Machine learning helps analyze large amounts of data..."
+        ],
+    )

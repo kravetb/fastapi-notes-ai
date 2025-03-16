@@ -1,8 +1,11 @@
+from collections import Counter
 from typing import List
 
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select, func, update, delete
 from sqlalchemy.orm import joinedload
+import nltk
+import numpy as np
 
 from app.schemas import note as schema
 from app.models.models import Note, NoteHistory
@@ -260,3 +263,43 @@ async def roll_back_note(
     except Exception:
         await db.rollback()
         return None
+
+
+async def get_notes_analytics(db: AsyncSession):
+    query = select(Note)
+    result = await db.execute(query)
+    notes = result.scalars().all()
+
+    if not notes:
+        return schema.AnalyticsResponse()
+
+    texts = [note.content for note in notes]
+
+    all_text = " ".join(texts)
+
+    words = nltk.word_tokenize(all_text)
+
+    filtered_words = [word for word in words if word.isalpha()]
+
+    total_words = len(filtered_words)
+
+    note_lengths = [len([word for word in nltk.word_tokenize(text) if word.isalpha()]) for text in texts]
+    avg_length = np.mean(note_lengths)
+
+    word_counts = Counter(filtered_words)
+    most_common_words = word_counts.most_common(5)
+
+    sorted_notes = sorted(notes, key=lambda note: len(note.content))
+
+    shortest_notes = [note.content for note in sorted_notes[:3]]
+    longest_notes = [note.content for note in sorted_notes[-3:]]
+
+    response = schema.AnalyticsResponse(
+        total_words=total_words,
+        average_note_length=avg_length,
+        most_common_words=most_common_words,
+        shortest_notes=shortest_notes,
+        longest_notes=longest_notes,
+    )
+
+    return response
