@@ -37,15 +37,11 @@ async def create_note(
         note_data: schema.CreateNote,
 ):
 
-    result = await crud_note.create_note(db=db, note_data=note_data)
-
-    if not result is None:
+    try:
+        result = await crud_note.create_note(db=db, note_data=note_data)
         return result
-
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Note creation failed",
-    )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @note_router.get(

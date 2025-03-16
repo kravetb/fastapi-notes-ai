@@ -1,6 +1,7 @@
 from collections import Counter
 from typing import List
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select, func, update, delete
 from sqlalchemy.orm import joinedload
@@ -87,7 +88,6 @@ async def create_note(
 
         db.add(note)
         await db.commit()
-        print("Ok")
         await db.refresh(note)
 
         note_history = NoteHistory(
@@ -109,9 +109,8 @@ async def create_note(
         return note_response
 
     except Exception as e:
-        print(e)
         await db.rollback()
-        return None
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 async def get_notes(
