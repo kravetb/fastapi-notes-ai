@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 
 from app.schemas import note as schema
 from app.models.models import Note, NoteHistory
+from app.ai_service import ai_service
 
 
 async def get_note(
@@ -135,7 +136,7 @@ async def get_notes(
                 id=item.id,
                 version=item.version,
                 title=item.title,
-                content=item.content,
+                content= await ai_service.get_summarize_note(item.content),
             )
             for item in notes_data
         ],

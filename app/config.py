@@ -27,6 +27,8 @@ class Settings(BaseSettings):
 
     SQLALCHEMY_DB_URL: str = f"{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
+    GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
+
 
 @lru_cache
 def get_settings() -> Settings:

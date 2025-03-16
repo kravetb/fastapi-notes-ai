@@ -94,3 +94,15 @@ class DetailResponseNote(ResponseNote):
         ...,
         description="History by current note",
     )
+
+
+class SummarizeResponseNote(Base):
+    title: str = Field(
+        ...,
+        description="The title of the note",
+        example="Note-1",
+    )
+    summarize_content: str = Field(
+        ...,
+        description="The summarize content of the note",
+    )
