@@ -155,19 +155,23 @@ async def update_note(
 ) -> schema.ResponseNote | None:
 
     try:
-
-        note_query = (
-            update(Note)
-            .where(Note.id == note_id)
-            .values(
-                content=update_data.content,
-                version=Note.version + 1,
+        try:
+            note_query = (
+                update(Note)
+                .where(Note.id == note_id)
+                .values(
+                    content=update_data.content,
+                    version=Note.version + 1,
+                )
+                .returning(Note.version)
             )
-            .returning(Note.version)
-        )
 
-        result = await db.execute(note_query)
-        new_version = result.scalar()
+            result = await db.execute(note_query)
+            new_version = result.scalar()
+
+        except Exception:
+            await db.rollback()
+            raise HTTPException(status_code=404, detail="Note not found")
 
 
         note_history = NoteHistory(
@@ -184,9 +188,9 @@ async def update_note(
 
         return new_note
 
-    except Exception:
+    except Exception as e:
         await db.rollback()
-        return None
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 async def delete_note(db: AsyncSession, note_id: int) -> bool:

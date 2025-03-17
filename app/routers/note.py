@@ -40,8 +40,12 @@ async def create_note(
     try:
         result = await crud_note.create_note(db=db, note_data=note_data)
         return result
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @note_router.get(
@@ -77,19 +81,23 @@ async def update_note(
         note_id: int = Path(..., title="Note ID", description="ID of the note"),
 ):
 
-    result = await crud_note.update_note(
-        db=db,
-        note_id=note_id,
-        update_data=update_data,
-    )
+    try:
+        result = await crud_note.update_note(
+            db=db,
+            note_id=note_id,
+            update_data=update_data,
+        )
 
-    if not result is None:
         return result
 
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Note update failed",
-    )
+    except HTTPException as http_err:
+        raise http_err
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
 
 
 @note_router.delete(

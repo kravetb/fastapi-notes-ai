@@ -43,7 +43,6 @@ def mock_summarize_note():
 
 @pytest.mark.asyncio
 async def test_get_notes_success(mock_get_db, mock_get_notes, mock_summarize_note):
-    """Тест успішного отримання нотаток."""
     app.dependency_overrides[get_db] = lambda: mock_get_db
     crud_note.get_notes = mock_get_notes
     ai_service.get_summarize_note = mock_summarize_note
