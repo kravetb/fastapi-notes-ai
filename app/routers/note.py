@@ -158,20 +158,28 @@ async def rollback_note(
         note_id: int,
         data: schema.RollbackNote,
 ):
+    try:
+        note = await crud_note.check_note(db=db, note_id=note_id)
+        if not note:
+            raise HTTPException(status_code=404, detail="Note not found")
 
-    result = await crud_note.roll_back_note(
-        db=db,
-        note_id=note_id,
-        version=data.version,
-    )
+        result = await crud_note.roll_back_note(
+            db=db,
+            note_id=note_id,
+            version=data.version,
+        )
 
-    if not result is None:
-        return result
+        if not result is None:
+            return result
 
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Note rollback failed",
-    )
+    except HTTPException as http_err:
+        raise http_err
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
 
 
 @note_router.get(

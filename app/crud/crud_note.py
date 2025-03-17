@@ -277,9 +277,9 @@ async def roll_back_note(
 
         return new_note
 
-    except Exception:
+    except Exception as e:
         await db.rollback()
-        return None
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 async def get_notes_analytics(db: AsyncSession):
