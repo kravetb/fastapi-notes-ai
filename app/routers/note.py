@@ -110,18 +110,27 @@ async def delete_note(
         note_id: int,
 ):
 
-    result = await crud_note.delete_note(
-        db=db,
-        note_id=note_id,
-    )
+    try:
+        note = await crud_note.check_note(db=db, note_id=note_id)
+        if not note:
+            raise HTTPException(status_code=404, detail="Note not found")
 
-    if result:
-        return result
+        result = await crud_note.delete_note(
+            db=db,
+            note_id=note_id,
+        )
 
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Note deletion failed",
-    )
+        if result:
+            return result
+
+    except HTTPException as http_err:
+        raise http_err
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
 
 
 @note_router.get(

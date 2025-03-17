@@ -36,6 +36,19 @@ async def get_note(
     return note
 
 
+async def check_note(
+        db: AsyncSession,
+        note_id: int,
+):
+    query = select(Note).where(Note.id == note_id)
+    result = await db.execute(query)
+    note_data = result.scalar()
+    if note_data is None:
+        return False
+
+    return True
+
+
 async def get_note_with_history(
         db: AsyncSession,
         note_id: int,
@@ -196,15 +209,16 @@ async def update_note(
 async def delete_note(db: AsyncSession, note_id: int) -> bool:
 
     try:
-        query = delete(Note).where(Note.id == note_id)
-        await db.execute(query)
+
+        delete_query = delete(Note).where(Note.id == note_id)
+        await db.execute(delete_query)
         await db.commit()
 
         return True
 
-    except Exception:
+    except Exception as e:
         await db.rollback()
-        return False
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 async def get_history_by_current_note(
